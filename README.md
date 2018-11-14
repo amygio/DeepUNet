@@ -1,5 +1,5 @@
-# Unet-tensorflow-keras
-This was forked from zizhaozhang: https://github.com/zizhaozhang/unet-tensorflow-keras.git
+# DeepUNet using Tensorflow and Keras
+This project was forked from zizhaozhang: https://github.com/zizhaozhang/unet-tensorflow-keras.git
 His code uses tensorflow + keras to train a U-Net model.
 
 I re-used this framework to implement the DeepUNet model presented in the following paper by R. Li et al.: 
