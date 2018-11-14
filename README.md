@@ -1,24 +1,10 @@
 # Unet-tensorflow-keras
-A concise code for training and evaluating Unet using tensorflow+keras 
+This was forked from zizhaozhang: https://github.com/zizhaozhang/unet-tensorflow-keras.git
+His code uses tensorflow + keras to train a U-Net model.
 
-A simple practice of the mixture usage of tensorflow and keras for the segmentation task. 
-Sometime using Keras to manage the training is not flexiable. But we still want to utilize the convenience of Keras to build the model.
-Using Keras to build the model is super easy and fully compatible with Tensorflow. 
+I re-used this framework to implement the DeepUNet model presented in the following paper by R. Li et al.: 
+Li, R., Liu, W., Yang, L., Sun, S., Hu, W., Zhang, F., & Li, W. (2018). Deepunet: A deep fully convolutional network for pixel-level sea-land segmentation. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing.
 
-I use the Unet architecture and modify its unsampling part to automatically adjust the feature map width and height when merge (concat) with previous layers. In this way, we do not need to compute the specific input size to fit the model but take an arbitrary size. 
-
-
-**UPDATE, Oct 2017**: 
-  - Take the image loader out of keras package to prevent the unpaird image/mask bug
-  - Use Tensorflow.contrib.keras 
-  - Improve usability
-  - Python 3 supported
-
-**UPDATE, July 2017**: 
-  - Change the code to fit Tensorflow > 1.0 
-  - Adding a loader file to use Keras generator to load image and mask with automatic augmentation
-  - Adding a VIS module to manage the evaluation metric.
-  - Adding opt.py to support easier use
 
 ### Usage
 - See loader.py to organize your train/test data hierarchy 
