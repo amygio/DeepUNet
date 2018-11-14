@@ -3,6 +3,7 @@ This was forked from zizhaozhang: https://github.com/zizhaozhang/unet-tensorflow
 His code uses tensorflow + keras to train a U-Net model.
 
 I re-used this framework to implement the DeepUNet model presented in the following paper by R. Li et al.: 
+
 Li, R., Liu, W., Yang, L., Sun, S., Hu, W., Zhang, F., & Li, W. (2018). Deepunet: A deep fully convolutional network for pixel-level sea-land segmentation. IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing.
 
 
