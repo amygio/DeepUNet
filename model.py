@@ -3,7 +3,7 @@
 """
 Created on Mon Jun 11 09:40:42 2018
 
-@author: ICI
+@author: Virginie Do 
 """
 
 import tensorflow as tf
