@@ -8,7 +8,6 @@ Created on Mon Jun 11 09:40:42 2018
 
 import tensorflow as tf
 import numpy as np
-from tensorflow.python.util.tf_export import _NAME_TO_SYMBOL_MAPPING
 try:
     #from tensorflow.contrib import keras as keras
     from tensorflow import keras as keras
@@ -58,16 +57,15 @@ class UNet():
         return bn, act
 
 
-    def up_block(self, act, bn, f, n):
+    def up_block(self, act, bn, f, name):
         x = layers.UpSampling2D(
-            size=(2,2), name='upsample_{}'.format(n))(act)
+            size=(2,2), name='upsample_{}'.format(name))(act)
 
         temp = layers.concatenate([bn, x], axis=1)
         temp = self.conv_bn_relu(temp, (3, 3), (1, 1),
-                            2*f, 'layer2_{}'.format(n))
-        #l = self.conv(temp, (3, 3), (1, 1), f, 'layer3_' + n
-         #   )
-        temp = layers.BatchNormalization(1, momentum=0.99, name='layer3_bn_' + n)(self.conv(temp, (3, 3), (1, 1), f, 'layer3_' + n))
+                            2*f, 'layer2_{}'.format(name))
+        temp = layers.BatchNormalization(self.conv(temp, (3, 3), (1, 1), f, 'layer3_{}'.format(
+            name)), momentum=0.99, name='layer3_bn_{}'.format(name))
 
         #bn = layers.add([bn,x])
         bn = self.shortcut(x, bn)

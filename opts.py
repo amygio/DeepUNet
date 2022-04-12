@@ -10,7 +10,7 @@ import argparse
 import os
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--batch_size', type=int, default=5, help='input batch size')
+parser.add_argument('--batch_size', type=int, default=32*4, help='input batch size')
 parser.add_argument('--learning_rate', type=float, default=0.0001, help='learning rate')
 parser.add_argument('--lr_decay', type=float, default=0.9, help='learning rate decay')
 parser.add_argument('--epoch', type=int, default=50, help='# of epochs')

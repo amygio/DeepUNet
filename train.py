@@ -9,13 +9,18 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import sys
+
+from logger import Logger #package to create log files
+
+#from tensorflow.python.ops.stateful_random_ops import SEED_SIZE
 
 SEED=0 # set set to allow reproducing runs
 import numpy as np
 np.random.seed(SEED)
 import tensorflow as tf
-tf.set_random_seed(SEED)
-
+tf.compat.v1.set_random_seed(SEED)
+tf.compat.v1.disable_eager_execution()
 import os, shutil
 from model import UNet
 from utils import dice_coef
@@ -25,37 +30,41 @@ from utils import VIS, mean_IU
 from opts import *
 from opts import dataset_mean, dataset_std # set them in opts
 
+#redirect output to the Logger class
+sys.stdout = Logger()
+
 # save and compute metrics
 vis = VIS(save_path=opt.checkpoint_path)
 
 # configuration session
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = False
+sess = tf.compat.v1.Session(config=config)
 
 
 ''' Users define data loader (with train and test) '''
 img_shape = [opt.imSize, opt.imSize]
+strategy = tf.distribute.MirroredStrategy()
 train_generator, train_samples = dataLoader(opt.data_path+'/train/', opt.batch_size,img_shape, mean=dataset_mean, std=dataset_std)
 test_generator, test_samples = dataLoader(opt.data_path+'/val/', 1,  img_shape, train_mode=False,mean=dataset_mean, std=dataset_std)
 
 opt.iter_epoch = int(train_samples) 
 # define input holders
-label = tf.placeholder(tf.int32, shape=[None]+img_shape)
+label = tf.compat.v1.placeholder(tf.int32, shape=[None]+img_shape)
 # define model
-with tf.name_scope('unet'):
+with tf.compat.v1.name_scope('unet'):
     model = UNet().create_model(img_shape=img_shape+[3], num_class=opt.num_class)
     img = model.input
     pred = model.output
 # define loss
-with tf.name_scope('cross_entropy'):
-    cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=pred))
+with tf.compat.v1.name_scope('cross_entropy'):
+    cross_entropy_loss = tf.reduce_mean(input_tensor=tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=pred))
 # define optimizer
 global_step = tf.Variable(0, name='global_step', trainable=False)
-with tf.name_scope('learning_rate'):
-    learning_rate = tf.train.exponential_decay(opt.learning_rate, global_step,
+with tf.compat.v1.name_scope('learning_rate'):
+    learning_rate = tf.compat.v1.train.exponential_decay(opt.learning_rate, global_step,
                                            opt.iter_epoch, opt.lr_decay, staircase=True)
-train_step = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cross_entropy_loss, global_step=global_step)
+train_step = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate).minimize(cross_entropy_loss, global_step=global_step)
 
 # compute dice score for simple evaluation during training
 # with tf.name_scope('dice_eval'):
@@ -69,16 +78,16 @@ if opt.load_from_checkpoint == '':
         if 'event' in item: 
             os.remove(os.path.join(opt.checkpoint_path, item))
 # define summary for tensorboard
-tf.summary.scalar('cross_entropy_loss', cross_entropy_loss)
-tf.summary.scalar('learning_rate', learning_rate)
-summary_merged = tf.summary.merge_all()
+tf.compat.v1.summary.scalar('cross_entropy_loss', cross_entropy_loss)
+tf.compat.v1.summary.scalar('learning_rate', learning_rate)
+summary_merged = tf.compat.v1.summary.merge_all()
 # define saver
-train_writer = tf.summary.FileWriter(opt.checkpoint_path, sess.graph)
-saver = tf.train.Saver() # must be added in the end
+train_writer = tf.compat.v1.summary.FileWriter(opt.checkpoint_path, sess.graph)
+saver = tf.compat.v1.train.Saver() # must be added in the end
 
 ''' Main '''
 tot_iter = opt.iter_epoch * opt.epoch
-init_op = tf.global_variables_initializer()
+init_op = tf.compat.v1.global_variables_initializer()
 sess.run(init_op)
 
 with sess.as_default():
@@ -131,4 +140,3 @@ with sess.as_default():
        
         if it % 20 == 0 : 
             print ('[iter %d, epoch %.3f]: lr=%f loss=%f, mean_IU=%f' % (it, float(it)/opt.iter_epoch, lr, loss, score))
-        

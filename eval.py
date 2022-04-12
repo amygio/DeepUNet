@@ -22,38 +22,42 @@ from utils import VIS, mean_IU
 # configure args
 from opts import *
 from opts import dataset_mean, dataset_std # set them in opts
-
+tf.compat.v1.disable_eager_execution()
 vis = VIS(save_path=opt.load_from_checkpoint)
 
 # configuration session
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
+sess = tf.compat.v1.Session(config=config)
 
 # define data loader
 img_shape = [opt.imSize, opt.imSize]
 test_generator, test_samples = dataLoader(opt.data_path+'/val/', 1,  img_shape, train_mode=False)
 # define model, the last dimension is the channel
-label = tf.placeholder(tf.int32, shape=[None]+img_shape)
-with tf.name_scope('unet'):
+label = tf.compat.v1.placeholder(tf.int32, shape=[None]+img_shape)
+with tf.compat.v1.name_scope('unet'):
     model = UNet().create_model(img_shape=img_shape+[3], num_class=opt.num_class)
     img = model.input
-    pred = model.output
+    pred = model.output 
 # define loss
-with tf.name_scope('cross_entropy'): 
-    cross_entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=pred))
+with tf.compat.v1.name_scope('cross_entropy'): 
+    cross_entropy_loss = tf.reduce_mean(input_tensor=tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=pred))
 
-saver = tf.train.Saver() # must be added in the end
+#saver = tf.compat.v1.train.Saver() # must be added in the end
+saver=tf.compat.v1.train.Checkpoint()
 
 ''' Main '''
-init_op = tf.global_variables_initializer()
+init_op = tf.compat.v1.global_variables_initializer()
 sess.run(init_op)
 with sess.as_default():
     # restore from a checkpoint if exists
     try:
-        saver.restore(sess, opt.load_from_checkpoint)
+        print(str(sess))
+        print(opt.load_from_checkpoint)
+        saver.restore(opt.load_from_checkpoint)
         print ('--> load from checkpoint '+opt.load_from_checkpoint)
-    except:
+    except Exception as e:
+        print(e)
         print ('unable to load checkpoint ...')
         sys.exit(0)
     dice_score = 0
